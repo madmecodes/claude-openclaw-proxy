@@ -1,0 +1,36 @@
+#!/bin/bash
+# Auto-setup script for OpenClaw EC2
+
+# System packages
+apt update && apt install -y git curl unzip jq
+
+# Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+
+# All setup as ubuntu user
+sudo -u ubuntu bash -c '
+  # npm global prefix
+  mkdir -p ~/.npm-global
+  npm config set prefix ~/.npm-global
+
+  # Add paths to bashrc
+  echo "export PATH=\$HOME/.npm-global/bin:\$PATH" >> ~/.bashrc
+  echo "export PATH=\$HOME/.local/bin:\$PATH" >> ~/.bashrc
+
+  # Source paths for this session
+  export PATH=$HOME/.npm-global/bin:$HOME/.local/bin:$PATH
+
+  # Claude Code
+  curl -fsSL https://claude.ai/install.sh | bash
+
+  # OpenClaw
+  export PATH=$HOME/.npm-global/bin:$HOME/.local/bin:$PATH
+  npm install -g openclaw@latest
+
+  # claude-max-api proxy
+  npm install -g claude-max-api-proxy
+
+  # Auto-start proxy silently on login
+  echo "nohup ~/.npm-global/bin/claude-max-api > /dev/null 2>&1 &" >> ~/.bashrc
+'
